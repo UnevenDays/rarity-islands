@@ -4,6 +4,8 @@ A Roblox collector in the loud, blocky style of Steal a Brainrot. Stand on three
 
 Only the island path is built. The other two ways to get characters are left for later.
 
+Gold coins spawn on the island you have reached. Touch one for a cash burst. A green outline marks a character you can afford. The launch pad shoves you backward when your speed is still too low, and the bar at the top fills as you get closer to the next island.
+
 ## The ten characters
 
 | Character | Rarity | Island | Cost | Cash per second | Speed |

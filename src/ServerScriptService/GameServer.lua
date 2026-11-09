@@ -5,6 +5,9 @@ local Lighting = game:GetService("Lighting")
 
 local Characters = require(ReplicatedStorage:WaitForChild("Characters"))
 local toast = ReplicatedStorage:WaitForChild("Toast")
+local float = Instance.new("RemoteEvent")
+float.Name = "Float"
+float.Parent = ReplicatedStorage
 
 local BASE_SPEED = Characters.BaseSpeed
 local START_CASH = 50
@@ -65,21 +68,107 @@ local function sign(cframe, text, color)
 	return board
 end
 
-local function tree(position)
+local function palm(position)
 	part({
-		name = "Trunk",
-		size = Vector3.new(1.2, 6, 1.2),
-		cframe = CFrame.new(position + Vector3.new(0, 3, 0)),
-		color = Color3.fromRGB(110, 72, 40),
+		name = "PalmTrunk",
+		size = Vector3.new(1.1, 7, 1.1),
+		cframe = CFrame.new(position + Vector3.new(0, 4.2, 0)) * CFrame.Angles(0, 0, math.rad(7)),
+		color = Color3.fromRGB(122, 78, 42),
 		material = Enum.Material.Wood,
 	})
+	for i = 0, 4 do
+		local angle = i * math.pi * 2 / 5
+		part({
+			name = "Frond",
+			size = Vector3.new(3.6, 0.22, 0.85),
+			cframe = CFrame.new(position + Vector3.new(math.cos(angle) * 1.7, 7.6, math.sin(angle) * 1.7)) * CFrame.Angles(math.rad(22), angle, 0),
+			color = Color3.fromRGB(36, 148, 64),
+			material = Enum.Material.Grass,
+		})
+	end
+end
+
+local function rock(position, scale)
 	part({
-		name = "Leaves",
-		size = Vector3.new(6, 5, 6),
-		cframe = CFrame.new(position + Vector3.new(0, 7.2, 0)),
-		color = Color3.fromRGB(46, 150, 70),
-		material = Enum.Material.Grass,
+		name = "Rock",
+		size = Vector3.new(3.4, 2.1, 2.6) * scale,
+		cframe = CFrame.new(position) * CFrame.Angles(0, math.rad(20 * scale), 0),
+		color = Color3.fromRGB(120, 124, 132),
+		material = Enum.Material.Slate,
 	})
+end
+
+local function styleLighting()
+	Lighting.ClockTime = 15
+	Lighting.Brightness = 2.2
+	Lighting.GlobalShadows = true
+	Lighting.OutdoorAmbient = Color3.fromRGB(150, 168, 190)
+	Lighting.Ambient = Color3.fromRGB(70, 80, 100)
+	Lighting.EnvironmentDiffuseScale = 0.45
+	Lighting.EnvironmentSpecularScale = 0.7
+	Lighting.FogColor = Color3.fromRGB(176, 214, 245)
+	Lighting.FogStart = 280
+	Lighting.FogEnd = 900
+
+	local atmosphere = Instance.new("Atmosphere")
+	atmosphere.Density = 0.28
+	atmosphere.Offset = 0.2
+	atmosphere.Color = Color3.fromRGB(190, 220, 255)
+	atmosphere.Decay = Color3.fromRGB(110, 150, 210)
+	atmosphere.Glare = 0.25
+	atmosphere.Haze = 1.1
+	atmosphere.Parent = Lighting
+
+	local bloom = Instance.new("BloomEffect")
+	bloom.Intensity = 0.35
+	bloom.Size = 22
+	bloom.Threshold = 0.95
+	bloom.Parent = Lighting
+
+	local grade = Instance.new("ColorCorrectionEffect")
+	grade.Saturation = 0.22
+	grade.Contrast = 0.08
+	grade.Brightness = 0.03
+	grade.Parent = Lighting
+end
+
+local function burst(position, color)
+	for i = 1, 8 do
+		local angle = i / 8 * math.pi * 2
+		local goal = position + Vector3.new(math.cos(angle) * 4, 2.5 + (i % 3), math.sin(angle) * 4)
+		local bit = part({
+			name = "Spark",
+			size = Vector3.new(0.4, 0.4, 0.4),
+			cframe = CFrame.new(position),
+			color = color,
+			material = Enum.Material.Neon,
+			collide = false,
+		})
+		bit.Shape = Enum.PartType.Ball
+		task.spawn(function()
+			local began = os.clock()
+			while bit.Parent and os.clock() - began < 0.4 do
+				local alpha = (os.clock() - began) / 0.4
+				bit.CFrame = CFrame.new(position:Lerp(goal, alpha))
+				bit.Transparency = alpha
+				task.wait()
+			end
+			if bit.Parent then
+				bit:Destroy()
+			end
+		end)
+	end
+end
+
+local function ping(parent)
+	local sound = Instance.new("Sound")
+	sound.SoundId = "rbxasset://sounds/electronicpingshort.wav"
+	sound.Volume = 0.45
+	sound.Parent = parent
+	sound:Play()
+	task.delay(2, function()
+		sound:Destroy()
+	end)
 end
 
 local function islandCenter(index)
@@ -87,20 +176,43 @@ local function islandCenter(index)
 end
 
 local function buildWorld()
-	Lighting.ClockTime = 14.5
-	Lighting.Brightness = 2
-	Lighting.GlobalShadows = true
-	Lighting.OutdoorAmbient = Color3.fromRGB(150, 160, 175)
+	styleLighting()
 
 	part({
+		name = "DeepWater",
+		size = Vector3.new(1600, 16, 800),
+		cframe = CFrame.new(400, -10, 0),
+		color = Color3.fromRGB(16, 70, 140),
+		material = Enum.Material.Glass,
+		transparency = 0.2,
+		collide = false,
+	})
+	part({
 		name = "Water",
-		size = Vector3.new(1400, 4, 700),
-		cframe = CFrame.new(400, -2, 0),
-		color = Color3.fromRGB(36, 130, 210),
+		size = Vector3.new(1600, 2, 800),
+		cframe = CFrame.new(400, -1.2, 0),
+		color = Color3.fromRGB(64, 176, 230),
+		material = Enum.Material.Glass,
 		transparency = 0.35,
 		collide = false,
 		touch = true,
 	})
+	local foam = Instance.new("Folder")
+	foam.Name = "Foam"
+	foam.Parent = workspace
+	for i = 1, 8 do
+		local crest = part({
+			name = "Crest",
+			size = Vector3.new(18, 0.3, 4),
+			cframe = CFrame.new(80 + i * 70, -0.2, -30 + (i % 3) * 24),
+			color = Color3.fromRGB(235, 248, 255),
+			transparency = 0.35,
+			collide = false,
+			parent = foam,
+		})
+		crest:SetAttribute("Origin", crest.Position)
+		crest:SetAttribute("Phase", i)
+	end
 
 	local shops = Instance.new("Folder")
 	shops.Name = "Shops"
@@ -109,18 +221,40 @@ local function buildWorld()
 	for index, info in ipairs(ISLANDS) do
 		local center = islandCenter(index)
 		part({
+			name = info.name .. " Cliff",
+			size = Vector3.new(ISLAND_SIZE.X + 8, 12, ISLAND_SIZE.Z + 8),
+			cframe = CFrame.new(center + Vector3.new(0, -6, 0)),
+			color = Color3.fromRGB(92, 78, 64),
+			material = Enum.Material.Rock,
+		})
+		part({
+			name = info.name .. " Beach",
+			size = Vector3.new(ISLAND_SIZE.X + 14, 1.4, ISLAND_SIZE.Z + 14),
+			cframe = CFrame.new(center + Vector3.new(0, -0.2, 0)),
+			color = Color3.fromRGB(232, 214, 164),
+			material = Enum.Material.Sand,
+		})
+		part({
 			name = info.name,
 			size = ISLAND_SIZE,
-			cframe = CFrame.new(center + Vector3.new(0, 0, 0)),
+			cframe = CFrame.new(center),
 			color = info.color,
 			material = Enum.Material.Grass,
 		})
 		part({
 			name = "Path",
-			size = Vector3.new(ISLAND_SIZE.X - 8, 0.4, 14),
-			cframe = CFrame.new(center + Vector3.new(0, 1.2, 8)),
-			color = info.accent,
+			size = Vector3.new(ISLAND_SIZE.X - 10, 0.35, 16),
+			cframe = CFrame.new(center + Vector3.new(0, 1.15, 8)),
+			color = Color3.fromRGB(236, 228, 206),
 			material = Enum.Material.Concrete,
+		})
+		part({
+			name = "PathEdge",
+			size = Vector3.new(ISLAND_SIZE.X - 10, 0.2, 18),
+			cframe = CFrame.new(center + Vector3.new(0, 1.05, 8)),
+			color = info.accent,
+			material = Enum.Material.Neon,
+			collide = false,
 		})
 
 		local spawn = Instance.new("SpawnLocation")
@@ -137,20 +271,41 @@ local function buildWorld()
 		spawn.Parent = workspace
 		spawnPoints[index] = spawn
 
-		tree(center + Vector3.new(-60, 1, -60))
-		tree(center + Vector3.new(62, 1, -50))
-		tree(center + Vector3.new(-55, 1, 55))
+		palm(center + Vector3.new(-62, 1, -62))
+		palm(center + Vector3.new(64, 1, -48))
+		palm(center + Vector3.new(-58, 1, 58))
+		rock(center + Vector3.new(58, 1.4, 52), 1.1)
+		rock(center + Vector3.new(-40, 1.3, 64), 0.7)
 
 		if index < #ISLANDS then
 			local gate = Characters.Gates[index]
+			local padPosition = center + Vector3.new(ISLAND_SIZE.X / 2 - 16, 1.6, 8)
 			local pad = part({
 				name = "Launch",
-				size = Vector3.new(12, 1, 12),
-				cframe = CFrame.new(center + Vector3.new(ISLAND_SIZE.X / 2 - 16, 1.6, 8)),
+				size = Vector3.new(14, 1, 14),
+				cframe = CFrame.new(padPosition),
 				color = Color3.fromRGB(255, 220, 60),
 				material = Enum.Material.Neon,
 				touch = true,
 			})
+			part({
+				name = "LaunchRing",
+				size = Vector3.new(16, 0.4, 16),
+				cframe = CFrame.new(padPosition + Vector3.new(0, 0.4, 0)),
+				color = Color3.fromRGB(255, 255, 255),
+				material = Enum.Material.Neon,
+				collide = false,
+			})
+			for step = 1, 3 do
+				part({
+					name = "Arrow",
+					size = Vector3.new(1.2, 0.3, 2.2),
+					cframe = CFrame.new(padPosition + Vector3.new(2 + step * 1.6, 0.7, 0)),
+					color = Color3.fromRGB(255, 250, 220),
+					material = Enum.Material.Neon,
+					collide = false,
+				})
+			end
 			sign(
 				CFrame.new(center + Vector3.new(ISLAND_SIZE.X / 2 - 16, 5.5, -4)),
 				string.format("%s\nNeed more than %d speed", gate.next, gate.need),
@@ -339,6 +494,8 @@ function tryBuy(player, def, model)
 	end
 	cash.Value -= def.cost
 	owned[player][def.id] = true
+	burst(model.PrimaryPart.Position + Vector3.new(0, 3, 0), Characters.RarityColor[def.rarity] or Color3.new(1, 1, 1))
+	ping(hrp)
 	local flag = Instance.new("BoolValue")
 	flag.Name = def.id
 	flag.Parent = player.Crew
@@ -365,6 +522,16 @@ function launch(player, fromIndex)
 	end
 	local speed = speedOf(player)
 	if speed <= gate.need then
+		local character = player.Character
+		local hrp = character and character:FindFirstChild("HumanoidRootPart")
+		if hrp then
+			local center = islandCenter(fromIndex)
+			local back = Vector3.new(center.X - hrp.Position.X, 0, center.Z - hrp.Position.Z)
+			if back.Magnitude < 0.2 then
+				back = Vector3.new(-1, 0, 0)
+			end
+			hrp.AssemblyLinearVelocity = back.Unit * 58 + Vector3.new(0, 42, 0)
+		end
 		toast:FireClient(player, string.format("Need more than %d speed. You have %d.", gate.need, speed))
 		return
 	end
@@ -402,6 +569,8 @@ function launch(player, fromIndex)
 			humanoid.PlatformStand = false
 			player.Checkpoint.Value = fromIndex + 1
 			player.RespawnLocation = spawnPoints[fromIndex + 1]
+			burst(destination, Color3.fromRGB(255, 220, 80))
+			ping(hrp)
 			toast:FireClient(player, "Welcome to " .. gate.next .. ".")
 			task.delay(0.6, function()
 				launchBusy[player] = nil
@@ -420,6 +589,24 @@ local function onCharacter(player, character)
 	character:SetAttribute("Launching", true)
 	hrp.CFrame = CFrame.new(islandCenter(island) + Vector3.new(-50, 6, 40))
 	humanoid.WalkSpeed = speedOf(player)
+	local top = Instance.new("Attachment")
+	top.Position = Vector3.new(0, 1.1, 0)
+	top.Parent = hrp
+	local bottom = Instance.new("Attachment")
+	bottom.Position = Vector3.new(0, -1.2, 0)
+	bottom.Parent = hrp
+	local trail = Instance.new("Trail")
+	trail.Attachment0 = top
+	trail.Attachment1 = bottom
+	trail.Lifetime = 0.35
+	trail.MinLength = 0.05
+	trail.Color = ColorSequence.new(Color3.fromRGB(255, 230, 90), Color3.fromRGB(90, 210, 255))
+	trail.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.25),
+		NumberSequenceKeypoint.new(1, 1),
+	})
+	trail.WidthScale = NumberSequence.new(1, 0)
+	trail.Parent = hrp
 	task.delay(0.5, function()
 		if character.Parent then
 			character:SetAttribute("Launching", false)
@@ -484,6 +671,83 @@ Players.PlayerRemoving:Connect(function(player)
 end)
 
 buildWorld()
+
+local ORB_VALUE = { 15, 70, 350 }
+local orbs = Instance.new("Folder")
+orbs.Name = "Orbs"
+orbs.Parent = workspace
+
+local function spawnOrb(islandIndex)
+	local center = islandCenter(islandIndex)
+	local spot = center + Vector3.new(math.random(-46, 46), 3.4, math.random(-8, 46))
+	local orb = part({
+		name = "CashOrb",
+		size = Vector3.new(1.6, 1.6, 1.6),
+		cframe = CFrame.new(spot),
+		color = Color3.fromRGB(255, 210, 50),
+		material = Enum.Material.Neon,
+		collide = false,
+		touch = true,
+		parent = orbs,
+	})
+	orb.Shape = Enum.PartType.Ball
+	orb:SetAttribute("Island", islandIndex)
+	orb:SetAttribute("Value", ORB_VALUE[islandIndex])
+	orb:SetAttribute("BaseY", spot.Y)
+	orb:SetAttribute("Phase", math.random() * 6)
+	local taken = false
+	orb.Touched:Connect(function(hit)
+		if taken then
+			return
+		end
+		local player = Players:GetPlayerFromCharacter(hit.Parent)
+		if not player or player.Checkpoint.Value ~= islandIndex then
+			return
+		end
+		local cash = player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Cash")
+		if not cash then
+			return
+		end
+		taken = true
+		local amount = orb:GetAttribute("Value")
+		cash.Value += amount
+		float:FireClient(player, amount)
+		burst(orb.Position, Color3.fromRGB(255, 210, 50))
+		orb:Destroy()
+	end)
+	task.delay(22, function()
+		if orb.Parent then
+			orb:Destroy()
+		end
+	end)
+end
+
+task.spawn(function()
+	while true do
+		task.wait(3.2)
+		for islandIndex = 1, 3 do
+			local count = 0
+			local watchers = 0
+			for _, player in ipairs(Players:GetPlayers()) do
+				local checkpoint = player:FindFirstChild("Checkpoint")
+				if checkpoint and checkpoint.Value == islandIndex then
+					watchers += 1
+				end
+			end
+			if watchers > 0 then
+				for _, orb in ipairs(orbs:GetChildren()) do
+					if orb:GetAttribute("Island") == islandIndex then
+						count += 1
+					end
+				end
+				if count < 5 then
+					spawnOrb(islandIndex)
+				end
+			end
+		end
+	end
+end)
+
 Players.PlayerAdded:Connect(onPlayer)
 for _, player in ipairs(Players:GetPlayers()) do
 	onPlayer(player)
@@ -503,12 +767,44 @@ task.spawn(function()
 end)
 
 RunService.Heartbeat:Connect(function()
+	local now = os.clock()
 	for _, player in ipairs(Players:GetPlayers()) do
 		local character = player.Character
 		local hrp = character and character:FindFirstChild("HumanoidRootPart")
 		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 		if hrp and humanoid and humanoid.Health > 0 and hrp.Position.Y < 0 and not character:GetAttribute("Launching") then
 			humanoid.Health = 0
+		end
+	end
+	local shops = workspace:FindFirstChild("Shops")
+	if shops then
+		for _, model in ipairs(shops:GetChildren()) do
+			if model:GetAttribute("Bob") then
+				local base = model:GetAttribute("Base")
+				local phase = model:GetAttribute("Phase") or 0
+				if typeof(base) == "CFrame" then
+					model:PivotTo(base + Vector3.new(0, math.sin(now * 2 + phase) * 0.35, 0))
+				end
+			end
+		end
+	end
+	for _, orb in ipairs(orbs:GetChildren()) do
+		local baseY = orb:GetAttribute("BaseY")
+		local phase = orb:GetAttribute("Phase") or 0
+		if baseY then
+			local pos = orb.Position
+			orb.CFrame = CFrame.new(pos.X, baseY + math.sin(now * 3 + phase) * 0.45, pos.Z)
+		end
+	end
+	local foam = workspace:FindFirstChild("Foam")
+	if foam then
+		for _, crest in ipairs(foam:GetChildren()) do
+			local origin = crest:GetAttribute("Origin")
+			local phase = crest:GetAttribute("Phase") or 0
+			if typeof(origin) == "Vector3" then
+				crest.CFrame = CFrame.new(origin + Vector3.new(math.sin(now * 0.6 + phase) * 6, 0, 0))
+				crest.Transparency = 0.25 + (math.sin(now * 2 + phase) + 1) * 0.2
+			end
 		end
 	end
 end)

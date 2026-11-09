@@ -412,31 +412,74 @@ function Characters.Build(def, worldCf, mode)
 		def.decorate(model, def.scale or 1)
 	end
 	model.PrimaryPart = root
+	model:SetAttribute("Id", def.id)
+	model:SetAttribute("Mode", mode)
+
+	local color = Characters.RarityColor[def.rarity] or Color3.new(1, 1, 1)
+	local scale = def.scale or 1
+	local stand = add(model, "Stand", Vector3.new(3.4, 0.4, 3.4) * scale, cf(Vector3.new(0, 0.12, 0)), color, nil, Enum.Material.Neon)
+	stand.Transparency = 0.4
+	add(model, "StandRim", Vector3.new(4.1, 0.18, 4.1) * scale, cf(Vector3.new(0, 0.02, 0)), Color3.fromRGB(18, 18, 24))
+
+	local glow = Instance.new("Highlight")
+	glow.Name = "RarityGlow"
+	glow.FillTransparency = 0.82
+	glow.OutlineTransparency = 0.2
+	glow.FillColor = color
+	glow.OutlineColor = color
+	glow.Parent = model
+
+	local light = Instance.new("PointLight")
+	light.Color = color
+	light.Range = 12
+	light.Brightness = 1.1
+	light.Parent = root
 
 	local bill = Instance.new("BillboardGui")
 	bill.Name = "Label"
-	bill.Size = UDim2.fromOffset(210, 96)
-	bill.StudsOffset = Vector3.new(0, 6.4 * (def.scale or 1), 0)
+	bill.Size = UDim2.fromOffset(220, 92)
+	bill.StudsOffset = Vector3.new(0, 6.8 * scale, 0)
 	bill.AlwaysOnTop = true
-	bill.MaxDistance = 120
+	bill.MaxDistance = 110
 	bill.Parent = root
-	local label = Instance.new("TextLabel")
-	label.BackgroundTransparency = 0.25
-	label.BackgroundColor3 = Color3.fromRGB(16, 16, 22)
-	label.Size = UDim2.fromScale(1, 1)
-	label.Font = Enum.Font.GothamBold
-	label.TextScaled = true
-	label.TextColor3 = Color3.new(1, 1, 1)
-	label.TextStrokeTransparency = 0.4
-	label.TextColor3 = Characters.RarityColor[def.rarity] or Color3.new(1, 1, 1)
-	if mode == "shop" then
-		label.Text = string.format("%s\n%s\n$%d    +%d speed    $%d/s", def.name, def.rarity, def.cost, def.speed, def.income)
-	else
-		label.Text = string.format("%s\n%s\n+$%d/s", def.name, def.rarity, def.income)
+
+	local frame = Instance.new("Frame")
+	frame.Size = UDim2.fromScale(1, 1)
+	frame.BackgroundColor3 = Color3.fromRGB(12, 12, 18)
+	frame.BackgroundTransparency = 0.18
+	frame.Parent = bill
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 10)
+	corner.Parent = frame
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = color
+	stroke.Thickness = 2
+	stroke.Parent = frame
+
+	local function line(y, height, text, textColor)
+		local item = Instance.new("TextLabel")
+		item.BackgroundTransparency = 1
+		item.Position = UDim2.fromScale(0.04, y)
+		item.Size = UDim2.fromScale(0.92, height)
+		item.Font = Enum.Font.GothamBold
+		item.Text = text
+		item.TextColor3 = textColor
+		item.TextScaled = true
+		item.Parent = frame
+		return item
 	end
-	label.Parent = bill
+	line(0.04, 0.34, def.name, Color3.new(1, 1, 1))
+	line(0.36, 0.24, def.rarity, color)
+	if mode == "shop" then
+		line(0.64, 0.28, string.format("$%d   +%d speed   $%d/s", def.cost, def.speed, def.income), Color3.fromRGB(255, 226, 120))
+	else
+		line(0.64, 0.28, string.format("+$%d/s", def.income), Color3.fromRGB(255, 226, 120))
+	end
 
 	model:PivotTo(worldCf)
+	model:SetAttribute("Base", model:GetPivot())
+	model:SetAttribute("Phase", math.random() * math.pi * 2)
+	model:SetAttribute("Bob", mode == "shop")
 	return model
 end
 
