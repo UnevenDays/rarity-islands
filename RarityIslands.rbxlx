@@ -1,0 +1,1166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<roblox version="4">
+  <Item class="Lighting" referent="1">
+    <Properties>
+      <string name="Name">Lighting</string>
+      <float name="Brightness">2</float>
+      <Color3 name="OutdoorAmbient">
+        <R>0.58</R><G>0.62</G><B>0.68</B>
+      </Color3>
+    </Properties>
+  </Item>
+  <Item class="ReplicatedStorage" referent="2">
+    <Properties>
+      <string name="Name">ReplicatedStorage</string>
+    </Properties>
+    <Item class="ModuleScript" referent="3">
+      <Properties>
+        <string name="Name">Characters</string>
+        <ProtectedString name="Source"><![CDATA[-- Rarity Islands catalog.
+-- Way 1 is the three speed-gated islands. Ways 2 and 3 are not in this version.
+
+local Characters = {}
+
+Characters.BaseSpeed = 16
+
+-- Leave an island only when Speed is greater than `need`.
+Characters.Gates = {
+	{ from = 1, need = 34, next = "Sand Reach" },
+	{ from = 2, need = 74, next = "Gold Isle" },
+}
+
+Characters.RarityColor = {
+	Common = Color3.fromRGB(190, 190, 198),
+	Uncommon = Color3.fromRGB(70, 210, 95),
+	Rare = Color3.fromRGB(70, 150, 255),
+	Epic = Color3.fromRGB(186, 80, 255),
+	Exotic = Color3.fromRGB(255, 120, 40),
+	Legendary = Color3.fromRGB(255, 186, 40),
+	Mythic = Color3.fromRGB(255, 64, 90),
+	Secret = Color3.fromRGB(255, 90, 190),
+	Brainrot = Color3.fromRGB(255, 210, 40),
+	Godly = Color3.fromRGB(80, 255, 220),
+}
+
+local function add(model, name, size, cf, color, shape, material)
+	local part = Instance.new("Part")
+	part.Name = name
+	part.Size = size
+	part.CFrame = cf
+	part.Color = color
+	part.Material = material or Enum.Material.SmoothPlastic
+	part.Anchored = true
+	part.CanCollide = false
+	part.CanTouch = false
+	part.CanQuery = false
+	part.TopSurface = Enum.SurfaceType.Smooth
+	part.BottomSurface = Enum.SurfaceType.Smooth
+	part.CastShadow = false
+	if shape then
+		part.Shape = shape
+	end
+	part.Parent = model
+	return part
+end
+
+local function mark(part, text, color, face)
+	local gui = Instance.new("SurfaceGui")
+	gui.Face = face or Enum.NormalId.Front
+	gui.LightInfluence = 0
+	gui.Parent = part
+	local label = Instance.new("TextLabel")
+	label.BackgroundTransparency = 1
+	label.Size = UDim2.fromScale(1, 1)
+	label.Font = Enum.Font.GothamBold
+	label.Text = text
+	label.TextColor3 = color
+	label.TextScaled = true
+	label.Parent = gui
+	return part
+end
+
+local function cf(pos, rx, ry, rz)
+	return CFrame.new(pos) * CFrame.Angles(rx or 0, ry or 0, rz or 0)
+end
+
+local function buildBody(model, def)
+	local s = def.scale or 1
+	local function sz(v)
+		return v * s
+	end
+	local function p(v)
+		return v * s
+	end
+	local sleeve = def.sleeve or def.shirt
+	add(model, "Torso", sz(Vector3.new(2, 2, 1)), cf(p(Vector3.new(0, 3, 0))), def.shirt)
+	add(model, "Head", sz(Vector3.new(1.35, 1.35, 1.35)), cf(p(Vector3.new(0, 4.75, 0))), def.skin, Enum.PartType.Ball)
+	add(model, "LeftArm", sz(Vector3.new(0.9, 2, 0.9)), cf(p(Vector3.new(-1.5, 3, 0))), sleeve)
+	add(model, "RightArm", sz(Vector3.new(0.9, 2, 0.9)), cf(p(Vector3.new(1.5, 3, 0))), sleeve)
+	add(model, "LeftLeg", sz(Vector3.new(0.9, 2, 0.9)), cf(p(Vector3.new(-0.5, 1, 0))), def.pants)
+	add(model, "RightLeg", sz(Vector3.new(0.9, 2, 0.9)), cf(p(Vector3.new(0.5, 1, 0))), def.pants)
+	if def.hair then
+		add(model, "Hair", sz(Vector3.new(1.45, 0.7, 1.45)), cf(p(Vector3.new(0, 5.35, 0))), def.hair, Enum.PartType.Ball)
+	end
+	if not def.customFace then
+		add(model, "EyeL", sz(Vector3.new(0.16, 0.2, 0.12)), cf(p(Vector3.new(-0.28, 4.82, -0.62))), Color3.fromRGB(20, 20, 24))
+		add(model, "EyeR", sz(Vector3.new(0.16, 0.2, 0.12)), cf(p(Vector3.new(0.28, 4.82, -0.62))), Color3.fromRGB(20, 20, 24))
+	end
+end
+
+local function decorateTin(model, s)
+	local coin = add(model, "Coin", Vector3.new(0.16, 1.05, 1.05) * s, cf(Vector3.new(0, 6.15, 0) * s), Color3.fromRGB(255, 196, 40), nil, Enum.Material.Neon)
+	mark(coin, "$", Color3.fromRGB(120, 70, 10), Enum.NormalId.Right)
+end
+
+local function decorateBibi(model, s)
+	local shade = add(model, "Glasses", Vector3.new(1.25, 0.32, 0.16) * s, cf(Vector3.new(0, 4.82, -0.68) * s), Color3.fromRGB(12, 12, 16))
+	shade.Material = Enum.Material.Glass
+	add(model, "GlassGlint", Vector3.new(0.35, 0.08, 0.08) * s, cf(Vector3.new(0.28, 4.9, -0.76) * s), Color3.fromRGB(180, 230, 255), nil, Enum.Material.Neon)
+	for i = -1, 1 do
+		add(model, "Tooth", Vector3.new(0.12, 0.12, 0.1) * s, cf(Vector3.new(i * 0.16, 4.28, -0.66) * s), Color3.fromRGB(255, 196, 40), nil, Enum.Material.Neon)
+	end
+	local plate = add(model, "RobePlate", Vector3.new(1.15, 1.15, 0.12) * s, cf(Vector3.new(0, 3.05, -0.56) * s), Color3.fromRGB(248, 251, 255))
+	mark(plate, "✡", Color3.fromRGB(20, 70, 190))
+	add(model, "BlueHem", Vector3.new(2.05, 0.28, 1.05) * s, cf(Vector3.new(0, 2.1, 0) * s), Color3.fromRGB(28, 78, 216))
+	local bat = add(model, "Bat", Vector3.new(0.28, 0.28, 2.1) * s, cf(Vector3.new(1.7, 2.3, -0.7) * s, math.rad(70), 0, math.rad(20)), Color3.fromRGB(150, 96, 42))
+	bat.Material = Enum.Material.Wood
+	add(model, "MoneyA", Vector3.new(0.7, 0.12, 0.4) * s, cf(Vector3.new(-1.7, 2.35, -0.45) * s), Color3.fromRGB(70, 170, 80))
+	add(model, "MoneyB", Vector3.new(0.62, 0.12, 0.36) * s, cf(Vector3.new(-1.7, 2.5, -0.45) * s), Color3.fromRGB(90, 190, 100))
+	add(model, "MoneyC", Vector3.new(0.5, 0.1, 0.3) * s, cf(Vector3.new(-1.7, 2.62, -0.45) * s), Color3.fromRGB(230, 230, 230))
+end
+
+local function decorateStalin(model, s)
+	add(model, "Hat", Vector3.new(1.7, 0.7, 1.7) * s, cf(Vector3.new(0, 5.45, 0) * s), Color3.fromRGB(170, 28, 36))
+	add(model, "HatFlapL", Vector3.new(0.28, 0.7, 1.2) * s, cf(Vector3.new(-0.78, 4.9, 0) * s), Color3.fromRGB(150, 24, 32))
+	add(model, "HatFlapR", Vector3.new(0.28, 0.7, 1.2) * s, cf(Vector3.new(0.78, 4.9, 0) * s), Color3.fromRGB(150, 24, 32))
+	local emblem = add(model, "Emblem", Vector3.new(0.55, 0.55, 0.1) * s, cf(Vector3.new(0, 5.35, -0.82) * s), Color3.fromRGB(255, 196, 40), nil, Enum.Material.Neon)
+	mark(emblem, "☭", Color3.fromRGB(120, 70, 10))
+	add(model, "Mustache", Vector3.new(0.7, 0.16, 0.18) * s, cf(Vector3.new(0, 4.45, -0.66) * s), Color3.fromRGB(40, 32, 28))
+	local handle = add(model, "HammerHandle", Vector3.new(0.16, 1.3, 0.16) * s, cf(Vector3.new(-1.75, 2.5, -0.55) * s), Color3.fromRGB(110, 72, 40), nil, Enum.Material.Wood)
+	handle.Name = "HammerHandle"
+	add(model, "HammerHead", Vector3.new(0.7, 0.28, 0.28) * s, cf(Vector3.new(-1.75, 3.15, -0.55) * s), Color3.fromRGB(150, 154, 160), nil, Enum.Material.Metal)
+	add(model, "SickleHandle", Vector3.new(0.14, 1.15, 0.14) * s, cf(Vector3.new(1.8, 2.55, -0.4) * s), Color3.fromRGB(110, 72, 40), nil, Enum.Material.Wood)
+	add(model, "SickleBlade", Vector3.new(0.55, 0.12, 0.45) * s, cf(Vector3.new(2.05, 3.05, -0.55) * s, 0, 0, math.rad(40)), Color3.fromRGB(190, 40, 40), nil, Enum.Material.Metal)
+	add(model, "BootL", Vector3.new(1.05, 0.55, 1.35) * s, cf(Vector3.new(-0.5, 0.35, -0.15) * s), Color3.fromRGB(58, 36, 24), nil, Enum.Material.Leather)
+	add(model, "BootR", Vector3.new(1.05, 0.55, 1.35) * s, cf(Vector3.new(0.5, 0.35, -0.15) * s), Color3.fromRGB(58, 36, 24), nil, Enum.Material.Leather)
+end
+
+local function decorateParade(model, s)
+	add(model, "Drum", Vector3.new(1.25, 0.85, 1.25) * s, cf(Vector3.new(0, 2.4, -0.95) * s), Color3.fromRGB(200, 40, 50))
+	add(model, "DrumSkin", Vector3.new(1.05, 0.16, 1.05) * s, cf(Vector3.new(0, 2.85, -0.95) * s), Color3.fromRGB(245, 230, 190))
+	add(model, "GoldButton", Vector3.new(0.22, 0.22, 0.12) * s, cf(Vector3.new(0, 3.4, -0.56) * s), Color3.fromRGB(255, 196, 40), Enum.PartType.Ball, Enum.Material.Neon)
+end
+
+local function decorateBanner(model, s)
+	add(model, "Pole", Vector3.new(0.16, 3.2, 0.16) * s, cf(Vector3.new(1.85, 3.3, -0.3) * s), Color3.fromRGB(90, 60, 30), nil, Enum.Material.Wood)
+	local flag = add(model, "Flag", Vector3.new(1.4, 0.9, 0.08) * s, cf(Vector3.new(2.6, 4.3, -0.3) * s), Color3.fromRGB(255, 214, 60))
+	mark(flag, "★", Color3.fromRGB(150, 70, 10))
+end
+
+local function kneelingFan(model, s, side)
+	local x = side * 1.7 * s
+	local z = -2.15 * s
+	local skin = Color3.fromRGB(232, 186, 146)
+	local cloth = Color3.fromRGB(180, 30, 40)
+	add(model, "FanBody", Vector3.new(0.7, 0.55, 0.55) * s, cf(Vector3.new(x, 0.55 * s, z)), cloth)
+	add(model, "FanHead", Vector3.new(0.55, 0.55, 0.55) * s, cf(Vector3.new(x, 1.05 * s, z - 0.1 * s)), skin, Enum.PartType.Ball)
+	add(model, "FanArm", Vector3.new(0.18, 0.55, 0.18) * s, cf(Vector3.new(x, 0.95 * s, z - 0.35 * s), math.rad(-40), 0, 0), skin)
+	add(model, "Tear", Vector3.new(0.12, 0.18, 0.08) * s, cf(Vector3.new(x + 0.12 * s, 0.95 * s, z - 0.32 * s)), Color3.fromRGB(80, 170, 255), nil, Enum.Material.Glass)
+end
+
+local function decorateKim(model, s)
+	local torso = model:FindFirstChild("Torso")
+	if torso then
+		torso.Size = Vector3.new(2.9, 2.3, 1.7) * s
+		torso.CFrame = cf(Vector3.new(0, 3.05, 0) * s)
+	end
+	local head = model:FindFirstChild("Head")
+	if head then
+		head.Size = Vector3.new(1.7, 1.55, 1.6) * s
+	end
+	add(model, "EyeL", Vector3.new(0.34, 0.08, 0.1) * s, cf(Vector3.new(-0.32, 4.85, -0.75) * s, 0, 0, math.rad(12)), Color3.fromRGB(15, 15, 18))
+	add(model, "EyeR", Vector3.new(0.34, 0.08, 0.1) * s, cf(Vector3.new(0.32, 4.85, -0.75) * s, 0, 0, math.rad(-12)), Color3.fromRGB(15, 15, 18))
+	local badge = add(model, "Badge", Vector3.new(0.7, 0.7, 0.1) * s, cf(Vector3.new(0, 3.2, -0.9) * s), Color3.fromRGB(248, 248, 252))
+	mark(badge, "★", Color3.fromRGB(190, 20, 30))
+	add(model, "StarBand", Vector3.new(2.2, 0.28, 1.2) * s, cf(Vector3.new(0, 2.15, 0) * s), Color3.fromRGB(20, 50, 160))
+	local missile = add(model, "Missile", Vector3.new(0.38, 0.38, 2.4) * s, cf(Vector3.new(1.9, 2.7, -0.9) * s, math.rad(80), 0, 0), Color3.fromRGB(70, 78, 70), nil, Enum.Material.Metal)
+	missile.Name = "Missile"
+	add(model, "MissileTip", Vector3.new(0.4, 0.5, 0.4) * s, cf(Vector3.new(2.15, 3.7, -1.15) * s), Color3.fromRGB(190, 30, 30), Enum.PartType.Ball)
+	add(model, "TankHull", Vector3.new(1.5, 0.45, 2.1) * s, cf(Vector3.new(-2.3, 0.4, -0.2) * s), Color3.fromRGB(28, 58, 32), nil, Enum.Material.Metal)
+	add(model, "TankTop", Vector3.new(0.7, 0.4, 0.8) * s, cf(Vector3.new(-2.3, 0.8, -0.15) * s), Color3.fromRGB(24, 48, 28), nil, Enum.Material.Metal)
+	add(model, "TankGun", Vector3.new(0.16, 0.16, 1.1) * s, cf(Vector3.new(-2.3, 0.85, -0.9) * s), Color3.fromRGB(20, 36, 22), nil, Enum.Material.Metal)
+	kneelingFan(model, s, -1)
+	kneelingFan(model, s, 1)
+end
+
+local function decorateOsama(model, s)
+	add(model, "Turban", Vector3.new(1.55, 0.55, 1.55) * s, cf(Vector3.new(0, 5.35, 0) * s), Color3.fromRGB(245, 245, 240))
+	add(model, "TurbanWrap", Vector3.new(1.2, 0.35, 1.7) * s, cf(Vector3.new(0, 5.15, -0.05) * s), Color3.fromRGB(230, 230, 224))
+	add(model, "TurbanTail", Vector3.new(0.35, 1.1, 0.2) * s, cf(Vector3.new(0.2, 4.5, 0.7) * s), Color3.fromRGB(245, 245, 240))
+	add(model, "Beard", Vector3.new(0.7, 0.85, 0.4) * s, cf(Vector3.new(0, 4.15, -0.55) * s), Color3.fromRGB(30, 26, 22))
+	for i = -1, 2 do
+		local angle = i * 0.8
+		add(model, "Bomb", Vector3.new(0.42, 0.42, 0.42) * s, cf(Vector3.new(math.sin(angle) * 0.95, 2.35, -math.cos(angle) * 0.7) * s), Color3.fromRGB(25, 25, 28), Enum.PartType.Ball, Enum.Material.Metal)
+	end
+	add(model, "Fuse", Vector3.new(0.08, 0.35, 0.08) * s, cf(Vector3.new(0.15, 2.7, -0.85) * s), Color3.fromRGB(180, 180, 180))
+	add(model, "PlaneBody", Vector3.new(0.35, 0.28, 1.7) * s, cf(Vector3.new(1.9, 3.1, -0.6) * s), Color3.fromRGB(235, 240, 245))
+	add(model, "PlaneWing", Vector3.new(1.5, 0.08, 0.4) * s, cf(Vector3.new(1.9, 3.15, -0.45) * s), Color3.fromRGB(40, 120, 200))
+	add(model, "PlaneTail", Vector3.new(0.08, 0.4, 0.35) * s, cf(Vector3.new(1.9, 3.35, 0.1) * s), Color3.fromRGB(40, 120, 200))
+end
+
+local function decorateVault(model, s)
+	add(model, "Hood", Vector3.new(1.5, 0.8, 1.5) * s, cf(Vector3.new(0, 5.3, 0) * s), Color3.fromRGB(90, 40, 150))
+	local door = add(model, "VaultDoor", Vector3.new(1.1, 1.3, 0.2) * s, cf(Vector3.new(0, 3.1, 0.6) * s), Color3.fromRGB(70, 74, 82), nil, Enum.Material.Metal)
+	mark(door, "VAULT", Color3.fromRGB(255, 196, 40), Enum.NormalId.Back)
+	add(model, "GoldBelt", Vector3.new(2.1, 0.22, 1.1) * s, cf(Vector3.new(0, 2.2, 0) * s), Color3.fromRGB(255, 196, 40), nil, Enum.Material.Neon)
+end
+
+local function decorateJin(model, s)
+	local torso = model:FindFirstChild("Torso")
+	if torso then
+		torso.Size = Vector3.new(2.7, 2.15, 1.6) * s
+	end
+	local head = model:FindFirstChild("Head")
+	if head then
+		head.Size = Vector3.new(1.85, 1.6, 1.7) * s
+		head.Color = Color3.fromRGB(255, 196, 60)
+	end
+	add(model, "EarL", Vector3.new(0.4, 0.45, 0.25) * s, cf(Vector3.new(-0.95, 4.9, 0) * s), Color3.fromRGB(255, 186, 50), Enum.PartType.Ball)
+	add(model, "EarR", Vector3.new(0.4, 0.45, 0.25) * s, cf(Vector3.new(0.95, 4.9, 0) * s), Color3.fromRGB(255, 186, 50), Enum.PartType.Ball)
+	add(model, "EyeL", Vector3.new(0.16, 0.16, 0.1) * s, cf(Vector3.new(-0.4, 4.95, -0.75) * s), Color3.fromRGB(20, 16, 12), Enum.PartType.Ball)
+	add(model, "EyeR", Vector3.new(0.16, 0.16, 0.1) * s, cf(Vector3.new(0.4, 4.95, -0.75) * s), Color3.fromRGB(20, 16, 12), Enum.PartType.Ball)
+	add(model, "Snout", Vector3.new(0.45, 0.35, 0.35) * s, cf(Vector3.new(0, 4.55, -0.75) * s), Color3.fromRGB(255, 176, 50), Enum.PartType.Ball)
+	add(model, "Nose", Vector3.new(0.18, 0.16, 0.12) * s, cf(Vector3.new(0, 4.58, -0.95) * s), Color3.fromRGB(30, 24, 20), Enum.PartType.Ball)
+	local star = add(model, "FlagStar", Vector3.new(0.7, 0.7, 0.08) * s, cf(Vector3.new(-0.35, 3.35, -0.85) * s), Color3.fromRGB(190, 20, 30))
+	mark(star, "★", Color3.fromRGB(255, 210, 40))
+	add(model, "FactoryA", Vector3.new(0.7, 1.1, 0.7) * s, cf(Vector3.new(-1.9, 2.7, -0.4) * s), Color3.fromRGB(130, 136, 144), nil, Enum.Material.Concrete)
+	add(model, "FactoryB", Vector3.new(0.55, 0.8, 0.55) * s, cf(Vector3.new(-2.45, 2.5, -0.35) * s), Color3.fromRGB(110, 116, 124), nil, Enum.Material.Concrete)
+	add(model, "Chimney", Vector3.new(0.22, 0.7, 0.22) * s, cf(Vector3.new(-1.9, 3.5, -0.4) * s), Color3.fromRGB(70, 74, 80), nil, Enum.Material.Metal)
+	local flag = add(model, "ChinaFlag", Vector3.new(0.9, 0.6, 0.08) * s, cf(Vector3.new(1.9, 3.3, -0.5) * s), Color3.fromRGB(190, 24, 32))
+	mark(flag, "★★", Color3.fromRGB(255, 210, 40))
+	add(model, "FlagPole", Vector3.new(0.1, 1.4, 0.1) * s, cf(Vector3.new(1.45, 2.8, -0.4) * s), Color3.fromRGB(230, 190, 60), nil, Enum.Material.Metal)
+end
+
+local function decorateWhale(model, s)
+	add(model, "Body", Vector3.new(3.4, 1.8, 4.2) * s, cf(Vector3.new(0, 2.2, 0) * s), Color3.fromRGB(55, 130, 210), nil, Enum.Material.SmoothPlastic)
+	add(model, "Belly", Vector3.new(2.4, 0.7, 3.2) * s, cf(Vector3.new(0, 1.5, -0.1) * s), Color3.fromRGB(235, 242, 250))
+	add(model, "Head", Vector3.new(2.2, 1.6, 1.8) * s, cf(Vector3.new(0, 2.5, -2.2) * s), Color3.fromRGB(55, 130, 210), Enum.PartType.Ball)
+	add(model, "EyeL", Vector3.new(0.28, 0.28, 0.12) * s, cf(Vector3.new(-0.55, 2.65, -3) * s), Color3.fromRGB(20, 20, 24), Enum.PartType.Ball)
+	add(model, "EyeR", Vector3.new(0.28, 0.28, 0.12) * s, cf(Vector3.new(0.55, 2.65, -3) * s), Color3.fromRGB(20, 20, 24), Enum.PartType.Ball)
+	add(model, "Tail", Vector3.new(0.4, 1.3, 1.5) * s, cf(Vector3.new(0, 2.4, 2.5) * s, math.rad(20), 0, 0), Color3.fromRGB(40, 110, 190))
+	add(model, "Crown", Vector3.new(1.5, 0.4, 1.5) * s, cf(Vector3.new(0, 3.7, -2.1) * s), Color3.fromRGB(255, 196, 40), nil, Enum.Material.Neon)
+	add(model, "CrownPoint", Vector3.new(0.25, 0.45, 0.25) * s, cf(Vector3.new(0, 4.1, -2.1) * s), Color3.fromRGB(255, 196, 40), nil, Enum.Material.Neon)
+	add(model, "Spout", Vector3.new(0.35, 0.9, 0.35) * s, cf(Vector3.new(0, 3.5, -0.4) * s), Color3.fromRGB(180, 230, 255), nil, Enum.Material.Glass)
+end
+
+local SKIN = Color3.fromRGB(242, 196, 154)
+local PALE = Color3.fromRGB(255, 214, 176)
+
+Characters.List = {
+	{
+		id = "tin",
+		name = "Tin Teller",
+		rarity = "Common",
+		island = 1,
+		cost = 25,
+		income = 5,
+		speed = 4,
+		scale = 1,
+		skin = PALE,
+		shirt = Color3.fromRGB(74, 78, 88),
+		pants = Color3.fromRGB(48, 50, 58),
+		hair = Color3.fromRGB(70, 48, 32),
+		decorate = decorateTin,
+	},
+	{
+		id = "bibi",
+		name = "Bibi Netanjahuuu",
+		rarity = "Uncommon",
+		island = 1,
+		cost = 250,
+		income = 14,
+		speed = 7,
+		scale = 1,
+		skin = PALE,
+		shirt = Color3.fromRGB(248, 251, 255),
+		pants = Color3.fromRGB(28, 78, 216),
+		sleeve = Color3.fromRGB(28, 78, 216),
+		decorate = decorateBibi,
+	},
+	{
+		id = "stalin",
+		name = "Josepee Stalin",
+		rarity = "Rare",
+		island = 1,
+		cost = 900,
+		income = 32,
+		speed = 9,
+		scale = 1.02,
+		skin = SKIN,
+		shirt = Color3.fromRGB(92, 62, 40),
+		pants = Color3.fromRGB(62, 48, 36),
+		sleeve = Color3.fromRGB(92, 62, 40),
+		hair = Color3.fromRGB(80, 80, 84),
+		decorate = decorateStalin,
+	},
+	{
+		id = "parade",
+		name = "Parade Drum",
+		rarity = "Epic",
+		island = 2,
+		cost = 2800,
+		income = 70,
+		speed = 8,
+		scale = 1,
+		skin = SKIN,
+		shirt = Color3.fromRGB(190, 30, 48),
+		pants = Color3.fromRGB(30, 30, 36),
+		sleeve = Color3.fromRGB(190, 30, 48),
+		hair = Color3.fromRGB(20, 20, 24),
+		decorate = decorateParade,
+	},
+	{
+		id = "banner",
+		name = "Banner Boy",
+		rarity = "Exotic",
+		island = 2,
+		cost = 6000,
+		income = 110,
+		speed = 9,
+		scale = 1,
+		skin = PALE,
+		shirt = Color3.fromRGB(36, 78, 170),
+		pants = Color3.fromRGB(24, 36, 80),
+		sleeve = Color3.fromRGB(36, 78, 170),
+		hair = Color3.fromRGB(40, 28, 18),
+		decorate = decorateBanner,
+	},
+	{
+		id = "kim",
+		name = "Kim Jong Uno",
+		rarity = "Legendary",
+		island = 2,
+		cost = 14000,
+		income = 220,
+		speed = 12,
+		scale = 1.15,
+		skin = Color3.fromRGB(236, 186, 140),
+		shirt = Color3.fromRGB(186, 22, 32),
+		pants = Color3.fromRGB(22, 48, 150),
+		sleeve = Color3.fromRGB(186, 22, 32),
+		hair = Color3.fromRGB(18, 18, 20),
+		customFace = true,
+		decorate = decorateKim,
+	},
+	{
+		id = "osama",
+		name = "Osama bin Baden",
+		rarity = "Mythic",
+		island = 2,
+		cost = 32000,
+		income = 480,
+		speed = 14,
+		scale = 1.05,
+		skin = Color3.fromRGB(214, 170, 130),
+		shirt = Color3.fromRGB(236, 236, 228),
+		pants = Color3.fromRGB(226, 226, 216),
+		sleeve = Color3.fromRGB(236, 236, 228),
+		decorate = decorateOsama,
+	},
+	{
+		id = "vault",
+		name = "Vault Monk",
+		rarity = "Secret",
+		island = 3,
+		cost = 150000,
+		income = 1100,
+		speed = 10,
+		scale = 1.05,
+		skin = SKIN,
+		shirt = Color3.fromRGB(86, 36, 140),
+		pants = Color3.fromRGB(48, 20, 80),
+		sleeve = Color3.fromRGB(86, 36, 140),
+		decorate = decorateVault,
+	},
+	{
+		id = "jin",
+		name = "Jin Pig",
+		rarity = "Brainrot",
+		island = 3,
+		cost = 500000,
+		income = 2600,
+		speed = 18,
+		scale = 1.18,
+		skin = Color3.fromRGB(255, 196, 60),
+		shirt = Color3.fromRGB(186, 22, 32),
+		pants = Color3.fromRGB(186, 22, 32),
+		sleeve = Color3.fromRGB(255, 196, 60),
+		customFace = true,
+		decorate = decorateJin,
+	},
+	{
+		id = "whale",
+		name = "Crown Whale",
+		rarity = "Godly",
+		island = 3,
+		cost = 2000000,
+		income = 7000,
+		speed = 30,
+		scale = 1.1,
+		custom = true,
+		decorate = decorateWhale,
+	},
+}
+
+Characters.ById = {}
+for _, def in ipairs(Characters.List) do
+	Characters.ById[def.id] = def
+end
+
+function Characters.Build(def, worldCf, mode)
+	local model = Instance.new("Model")
+	model.Name = def.name
+	local root = add(model, "Root", Vector3.new(0.4, 0.4, 0.4), cf(Vector3.new(0, 0.2, 0)), Color3.new(1, 1, 1))
+	root.Transparency = 1
+	root.CanQuery = true
+	if not def.custom then
+		buildBody(model, def)
+	end
+	if def.decorate then
+		def.decorate(model, def.scale or 1)
+	end
+	model.PrimaryPart = root
+
+	local bill = Instance.new("BillboardGui")
+	bill.Name = "Label"
+	bill.Size = UDim2.fromOffset(210, 96)
+	bill.StudsOffset = Vector3.new(0, 6.4 * (def.scale or 1), 0)
+	bill.AlwaysOnTop = true
+	bill.MaxDistance = 120
+	bill.Parent = root
+	local label = Instance.new("TextLabel")
+	label.BackgroundTransparency = 0.25
+	label.BackgroundColor3 = Color3.fromRGB(16, 16, 22)
+	label.Size = UDim2.fromScale(1, 1)
+	label.Font = Enum.Font.GothamBold
+	label.TextScaled = true
+	label.TextColor3 = Color3.new(1, 1, 1)
+	label.TextStrokeTransparency = 0.4
+	label.TextColor3 = Characters.RarityColor[def.rarity] or Color3.new(1, 1, 1)
+	if mode == "shop" then
+		label.Text = string.format("%s\n%s\n$%d    +%d speed    $%d/s", def.name, def.rarity, def.cost, def.speed, def.income)
+	else
+		label.Text = string.format("%s\n%s\n+$%d/s", def.name, def.rarity, def.income)
+	end
+	label.Parent = bill
+
+	model:PivotTo(worldCf)
+	return model
+end
+
+return Characters
+]]></ProtectedString>
+        <bool name="Disabled">false</bool>
+      </Properties>
+    </Item>
+    <Item class="RemoteEvent" referent="4">
+      <Properties>
+        <string name="Name">Toast</string>
+      </Properties>
+    </Item>
+  </Item>
+  <Item class="ServerScriptService" referent="5">
+    <Properties>
+      <string name="Name">ServerScriptService</string>
+    </Properties>
+    <Item class="Script" referent="6">
+      <Properties>
+        <string name="Name">GameServer</string>
+        <ProtectedString name="Source"><![CDATA[local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
+
+local Characters = require(ReplicatedStorage:WaitForChild("Characters"))
+local toast = ReplicatedStorage:WaitForChild("Toast")
+
+local BASE_SPEED = Characters.BaseSpeed
+local START_CASH = 50
+local ISLAND_SIZE = Vector3.new(150, 2, 170)
+local GAP = 120
+
+local ISLANDS = {
+	{ name = "Green Dock", color = Color3.fromRGB(78, 168, 72), accent = Color3.fromRGB(255, 214, 70) },
+	{ name = "Sand Reach", color = Color3.fromRGB(214, 184, 104), accent = Color3.fromRGB(255, 150, 50) },
+	{ name = "Gold Isle", color = Color3.fromRGB(92, 70, 168), accent = Color3.fromRGB(255, 210, 70) },
+}
+
+local owned = {}
+local docks = {}
+local spawnPoints = {}
+local launchBusy = {}
+
+local function part(props)
+	local item = Instance.new(props.className or "Part")
+	item.Name = props.name or "Part"
+	item.Anchored = true
+	item.Size = props.size or Vector3.new(4, 1, 4)
+	item.CFrame = props.cframe or CFrame.new()
+	item.Color = props.color or Color3.fromRGB(180, 180, 180)
+	item.Material = props.material or Enum.Material.SmoothPlastic
+	item.TopSurface = Enum.SurfaceType.Smooth
+	item.BottomSurface = Enum.SurfaceType.Smooth
+	item.CanCollide = props.collide ~= false
+	item.CanTouch = props.touch == true
+	item.Parent = props.parent or workspace
+	if props.transparency then
+		item.Transparency = props.transparency
+	end
+	return item
+end
+
+local function sign(cframe, text, color)
+	local board = part({
+		name = "Sign",
+		size = Vector3.new(10, 5, 0.4),
+		cframe = cframe,
+		color = Color3.fromRGB(24, 24, 30),
+		parent = workspace,
+	})
+	local gui = Instance.new("SurfaceGui")
+	gui.Face = Enum.NormalId.Front
+	gui.LightInfluence = 0
+	gui.Parent = board
+	local label = Instance.new("TextLabel")
+	label.BackgroundTransparency = 1
+	label.Size = UDim2.fromScale(1, 1)
+	label.Font = Enum.Font.GothamBold
+	label.Text = text
+	label.TextColor3 = color or Color3.new(1, 1, 1)
+	label.TextScaled = true
+	label.TextWrapped = true
+	label.Parent = gui
+	return board
+end
+
+local function tree(position)
+	part({
+		name = "Trunk",
+		size = Vector3.new(1.2, 6, 1.2),
+		cframe = CFrame.new(position + Vector3.new(0, 3, 0)),
+		color = Color3.fromRGB(110, 72, 40),
+		material = Enum.Material.Wood,
+	})
+	part({
+		name = "Leaves",
+		size = Vector3.new(6, 5, 6),
+		cframe = CFrame.new(position + Vector3.new(0, 7.2, 0)),
+		color = Color3.fromRGB(46, 150, 70),
+		material = Enum.Material.Grass,
+	})
+end
+
+local function islandCenter(index)
+	return Vector3.new((index - 1) * (ISLAND_SIZE.X + GAP), 0, 0)
+end
+
+local function buildWorld()
+	Lighting.ClockTime = 14.5
+	Lighting.Brightness = 2
+	Lighting.GlobalShadows = true
+	Lighting.OutdoorAmbient = Color3.fromRGB(150, 160, 175)
+
+	part({
+		name = "Water",
+		size = Vector3.new(1400, 4, 700),
+		cframe = CFrame.new(400, -2, 0),
+		color = Color3.fromRGB(36, 130, 210),
+		transparency = 0.35,
+		collide = false,
+		touch = true,
+	})
+
+	local shops = Instance.new("Folder")
+	shops.Name = "Shops"
+	shops.Parent = workspace
+
+	for index, info in ipairs(ISLANDS) do
+		local center = islandCenter(index)
+		part({
+			name = info.name,
+			size = ISLAND_SIZE,
+			cframe = CFrame.new(center + Vector3.new(0, 0, 0)),
+			color = info.color,
+			material = Enum.Material.Grass,
+		})
+		part({
+			name = "Path",
+			size = Vector3.new(ISLAND_SIZE.X - 8, 0.4, 14),
+			cframe = CFrame.new(center + Vector3.new(0, 1.2, 8)),
+			color = info.accent,
+			material = Enum.Material.Concrete,
+		})
+
+		local spawn = Instance.new("SpawnLocation")
+		spawn.Name = info.name .. " Spawn"
+		spawn.Size = Vector3.new(8, 1, 8)
+		spawn.CFrame = CFrame.new(center + Vector3.new(-50, 1.5, 40))
+		spawn.Anchored = true
+		spawn.Neutral = true
+		spawn.Duration = 0
+		spawn.Enabled = true
+		spawn.Color = info.accent
+		spawn.Material = Enum.Material.Neon
+		spawn.TopSurface = Enum.SurfaceType.Smooth
+		spawn.Parent = workspace
+		spawnPoints[index] = spawn
+
+		tree(center + Vector3.new(-60, 1, -60))
+		tree(center + Vector3.new(62, 1, -50))
+		tree(center + Vector3.new(-55, 1, 55))
+
+		if index < #ISLANDS then
+			local gate = Characters.Gates[index]
+			local pad = part({
+				name = "Launch",
+				size = Vector3.new(12, 1, 12),
+				cframe = CFrame.new(center + Vector3.new(ISLAND_SIZE.X / 2 - 16, 1.6, 8)),
+				color = Color3.fromRGB(255, 220, 60),
+				material = Enum.Material.Neon,
+				touch = true,
+			})
+			sign(
+				CFrame.new(center + Vector3.new(ISLAND_SIZE.X / 2 - 16, 5.5, -4)),
+				string.format("%s\nNeed more than %d speed", gate.next, gate.need),
+				Color3.fromRGB(255, 220, 80)
+			)
+			pad.Touched:Connect(function(hit)
+				local player = Players:GetPlayerFromCharacter(hit.Parent)
+				if player then
+					launch(player, index)
+				end
+			end)
+		end
+	end
+
+	sign(
+		CFrame.new(islandCenter(1) + Vector3.new(0, 8, -70)),
+		"RARITY ISLANDS\nCollect rarer characters.\nThey pay more and make you faster.",
+		Color3.fromRGB(255, 230, 90)
+	)
+	sign(
+		CFrame.new(islandCenter(1) + Vector3.new(-48, 6, -20)),
+		"Only the islands are open.\nTwo more ways to collect\nare not built yet.",
+		Color3.fromRGB(180, 220, 255)
+	)
+
+	local perIsland = {
+		{
+			Vector3.new(-36, 1.2, -40),
+			Vector3.new(0, 1.2, -40),
+			Vector3.new(36, 1.2, -40),
+		},
+		{
+			Vector3.new(-48, 1.2, -40),
+			Vector3.new(-16, 1.2, -40),
+			Vector3.new(16, 1.2, -40),
+			Vector3.new(48, 1.2, -40),
+		},
+		{
+			Vector3.new(-32, 1.2, -40),
+			Vector3.new(0, 1.2, -40),
+			Vector3.new(32, 1.2, -40),
+		},
+	}
+	local placed = { 0, 0, 0 }
+	for _, def in ipairs(Characters.List) do
+		placed[def.island] += 1
+		local center = islandCenter(def.island)
+		local offset = perIsland[def.island][placed[def.island]]
+		local look = CFrame.lookAt(center + offset + Vector3.new(0, 0, 0), center + offset + Vector3.new(0, 0, 1))
+		local model = Characters.Build(def, look, "shop")
+		model.Parent = shops
+		local prompt = Instance.new("ProximityPrompt")
+		prompt.Name = "Buy"
+		prompt.ActionText = "Collect"
+		prompt.ObjectText = def.name
+		prompt.HoldDuration = 0.35
+		prompt.MaxActivationDistance = 14
+		prompt.RequiresLineOfSight = false
+		prompt.Parent = model.PrimaryPart
+		prompt.Triggered:Connect(function(player)
+			tryBuy(player, def, model)
+		end)
+	end
+end
+
+local function speedOf(player)
+	local stats = player:FindFirstChild("leaderstats")
+	local speed = stats and stats:FindFirstChild("Speed")
+	return speed and speed.Value or BASE_SPEED
+end
+
+local function applySpeed(player)
+	local character = player.Character
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	if humanoid then
+		humanoid.WalkSpeed = speedOf(player)
+	end
+end
+
+local function recompute(player)
+	local bonus = 0
+	local income = 0
+	local count = 0
+	for _, def in ipairs(Characters.List) do
+		if owned[player] and owned[player][def.id] then
+			bonus += def.speed
+			income += def.income
+			count += 1
+		end
+	end
+	player.leaderstats.Speed.Value = BASE_SPEED + bonus
+	player.Income.Value = income
+	player.OwnedCount.Value = count
+	applySpeed(player)
+	return player.leaderstats.Speed.Value
+end
+
+local function placeCrew(player)
+	local folder = docks[player]
+	if not folder then
+		return
+	end
+	local old = folder:FindFirstChild("Crew")
+	if old then
+		old:Destroy()
+	end
+	local crew = Instance.new("Folder")
+	crew.Name = "Crew"
+	crew.Parent = folder
+	local n = 0
+	for _, def in ipairs(Characters.List) do
+		if owned[player][def.id] then
+			n += 1
+			local column = (n - 1) % 5
+			local row = math.floor((n - 1) / 5)
+			local spot = folder.PrimaryPart.CFrame * CFrame.new(-8 + column * 4, 2, -4 - row * 5)
+			local model = Characters.Build(def, spot, "owned")
+			model.Parent = crew
+		end
+	end
+end
+
+local nextDock = 0
+
+local function assignDock(player)
+	nextDock += 1
+	local index = nextDock
+	local center = islandCenter(1)
+	local origin = center + Vector3.new(-42 + ((index - 1) % 4) * 28, 1.2, 62)
+	local dock = Instance.new("Model")
+	dock.Name = "Dock_" .. player.UserId
+	local pad = part({
+		name = "Pad",
+		size = Vector3.new(24, 1, 16),
+		cframe = CFrame.new(origin),
+		color = Color3.fromRGB(255, 244, 210),
+		parent = dock,
+	})
+	dock.PrimaryPart = pad
+	local board = part({
+		name = "Nameplate",
+		size = Vector3.new(10, 3, 0.4),
+		cframe = CFrame.new(origin + Vector3.new(0, 4, 7)),
+		color = Color3.fromRGB(24, 24, 30),
+		parent = dock,
+	})
+	local gui = Instance.new("SurfaceGui")
+	gui.Face = Enum.NormalId.Front
+	gui.Parent = board
+	local label = Instance.new("TextLabel")
+	label.BackgroundTransparency = 1
+	label.Size = UDim2.fromScale(1, 1)
+	label.Font = Enum.Font.GothamBold
+	label.TextScaled = true
+	label.TextColor3 = Color3.fromRGB(255, 220, 70)
+	label.Text = player.DisplayName .. "'s crew"
+	label.Parent = gui
+	dock.Parent = workspace
+	docks[player] = dock
+end
+
+function tryBuy(player, def, model)
+	if not owned[player] then
+		return
+	end
+	if player.Checkpoint.Value < def.island then
+		toast:FireClient(player, "Reach that island first.")
+		return
+	end
+	local character = player.Character
+	local hrp = character and character:FindFirstChild("HumanoidRootPart")
+	if not hrp or not model.PrimaryPart then
+		return
+	end
+	if (hrp.Position - model.PrimaryPart.Position).Magnitude > 18 then
+		return
+	end
+	if owned[player][def.id] then
+		toast:FireClient(player, "Already in your crew.")
+		return
+	end
+	local cash = player.leaderstats.Cash
+	if cash.Value < def.cost then
+		toast:FireClient(player, string.format("Need $%d more.", def.cost - cash.Value))
+		return
+	end
+	cash.Value -= def.cost
+	owned[player][def.id] = true
+	local flag = Instance.new("BoolValue")
+	flag.Name = def.id
+	flag.Parent = player.Crew
+	local speed = recompute(player)
+	placeCrew(player)
+	toast:FireClient(player, string.format("%s joined. +%d speed, +$%d/s.", def.name, def.speed, def.income))
+	local gate = Characters.Gates[player.Checkpoint.Value]
+	if gate and speed > gate.need then
+		toast:FireClient(player, "You can cross to " .. gate.next .. ".")
+	end
+end
+
+function launch(player, fromIndex)
+	if launchBusy[player] then
+		return
+	end
+	local gate = Characters.Gates[fromIndex]
+	if not gate then
+		return
+	end
+	if player.Checkpoint.Value ~= fromIndex then
+		toast:FireClient(player, "Use the pad on the island you are on.")
+		return
+	end
+	local speed = speedOf(player)
+	if speed <= gate.need then
+		toast:FireClient(player, string.format("Need more than %d speed. You have %d.", gate.need, speed))
+		return
+	end
+	local character = player.Character
+	local hrp = character and character:FindFirstChild("HumanoidRootPart")
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	if not hrp or not humanoid or humanoid.Health <= 0 then
+		return
+	end
+
+	launchBusy[player] = true
+	character:SetAttribute("Launching", true)
+	local destination = islandCenter(fromIndex + 1) + Vector3.new(-ISLAND_SIZE.X / 2 + 18, 6, 8)
+	local start = hrp.Position
+	humanoid.PlatformStand = true
+	hrp.Anchored = true
+	local began = os.clock()
+	local duration = 1.15
+	local connection
+	connection = RunService.Heartbeat:Connect(function()
+		if not hrp.Parent then
+			connection:Disconnect()
+			launchBusy[player] = nil
+			return
+		end
+		local alpha = math.clamp((os.clock() - began) / duration, 0, 1)
+		local flat = start:Lerp(destination, alpha)
+		local height = math.sin(alpha * math.pi) * 28
+		hrp.CFrame = CFrame.new(flat + Vector3.new(0, height, 0))
+		if alpha >= 1 then
+			connection:Disconnect()
+			hrp.CFrame = CFrame.new(destination)
+			hrp.AssemblyLinearVelocity = Vector3.zero
+			hrp.Anchored = false
+			humanoid.PlatformStand = false
+			player.Checkpoint.Value = fromIndex + 1
+			player.RespawnLocation = spawnPoints[fromIndex + 1]
+			toast:FireClient(player, "Welcome to " .. gate.next .. ".")
+			task.delay(0.6, function()
+				launchBusy[player] = nil
+				if character.Parent then
+					character:SetAttribute("Launching", false)
+				end
+			end)
+		end
+	end)
+end
+
+local function onCharacter(player, character)
+	local hrp = character:WaitForChild("HumanoidRootPart")
+	local humanoid = character:WaitForChild("Humanoid")
+	local island = player.Checkpoint.Value
+	character:SetAttribute("Launching", true)
+	hrp.CFrame = CFrame.new(islandCenter(island) + Vector3.new(-50, 6, 40))
+	humanoid.WalkSpeed = speedOf(player)
+	task.delay(0.5, function()
+		if character.Parent then
+			character:SetAttribute("Launching", false)
+		end
+	end)
+end
+
+local function onPlayer(player)
+	if owned[player] then
+		return
+	end
+	owned[player] = {}
+	local stats = Instance.new("Folder")
+	stats.Name = "leaderstats"
+	local cash = Instance.new("IntValue")
+	cash.Name = "Cash"
+	cash.Value = START_CASH
+	cash.Parent = stats
+	local speed = Instance.new("IntValue")
+	speed.Name = "Speed"
+	speed.Value = BASE_SPEED
+	speed.Parent = stats
+	stats.Parent = player
+
+	local income = Instance.new("IntValue")
+	income.Name = "Income"
+	income.Value = 0
+	income.Parent = player
+
+	local count = Instance.new("IntValue")
+	count.Name = "OwnedCount"
+	count.Value = 0
+	count.Parent = player
+
+	local checkpoint = Instance.new("IntValue")
+	checkpoint.Name = "Checkpoint"
+	checkpoint.Value = 1
+	checkpoint.Parent = player
+
+	local crew = Instance.new("Folder")
+	crew.Name = "Crew"
+	crew.Parent = player
+
+	player.RespawnLocation = spawnPoints[1]
+	assignDock(player)
+	player.CharacterAdded:Connect(function(character)
+		onCharacter(player, character)
+	end)
+	if player.Character then
+		onCharacter(player, player.Character)
+	end
+end
+
+Players.PlayerRemoving:Connect(function(player)
+	owned[player] = nil
+	launchBusy[player] = nil
+	local dock = docks[player]
+	docks[player] = nil
+	if dock then
+		dock:Destroy()
+	end
+end)
+
+buildWorld()
+Players.PlayerAdded:Connect(onPlayer)
+for _, player in ipairs(Players:GetPlayers()) do
+	onPlayer(player)
+end
+
+task.spawn(function()
+	while true do
+		task.wait(1)
+		for _, player in ipairs(Players:GetPlayers()) do
+			local income = player:FindFirstChild("Income")
+			local cash = player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Cash")
+			if income and cash and income.Value > 0 then
+				cash.Value += income.Value
+			end
+		end
+	end
+end)
+
+RunService.Heartbeat:Connect(function()
+	for _, player in ipairs(Players:GetPlayers()) do
+		local character = player.Character
+		local hrp = character and character:FindFirstChild("HumanoidRootPart")
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		if hrp and humanoid and humanoid.Health > 0 and hrp.Position.Y < 0 and not character:GetAttribute("Launching") then
+			humanoid.Health = 0
+		end
+	end
+end)
+]]></ProtectedString>
+        <bool name="Disabled">false</bool>
+      </Properties>
+    </Item>
+  </Item>
+  <Item class="StarterPlayer" referent="7">
+    <Properties>
+      <string name="Name">StarterPlayer</string>
+    </Properties>
+    <Item class="StarterPlayerScripts" referent="8">
+      <Properties>
+        <string name="Name">StarterPlayerScripts</string>
+      </Properties>
+      <Item class="LocalScript" referent="9">
+      <Properties>
+        <string name="Name">GameClient</string>
+        <ProtectedString name="Source"><![CDATA[local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Characters = require(ReplicatedStorage:WaitForChild("Characters"))
+local toast = ReplicatedStorage:WaitForChild("Toast")
+local player = Players.LocalPlayer
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "RarityIslands"
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local function stroke(label)
+	label.TextStrokeTransparency = 0
+	label.TextStrokeColor3 = Color3.new(0, 0, 0)
+	return label
+end
+
+local function label(parent, position, size, text, color, z)
+	local item = Instance.new("TextLabel")
+	item.BackgroundTransparency = 1
+	item.Position = position
+	item.Size = size
+	item.Font = Enum.Font.GothamBold
+	item.Text = text
+	item.TextColor3 = color
+	item.TextScaled = true
+	item.ZIndex = z or 2
+	stroke(item)
+	item.Parent = parent
+	return item
+end
+
+local cashLabel = label(gui, UDim2.fromScale(0.28, 0.02), UDim2.fromScale(0.44, 0.07), "$0", Color3.fromRGB(255, 220, 60), 3)
+local infoLabel = label(gui, UDim2.fromScale(0.2, 0.09), UDim2.fromScale(0.6, 0.04), "Speed 16", Color3.fromRGB(180, 240, 255), 3)
+local hintLabel = label(gui, UDim2.fromScale(0.15, 0.9), UDim2.fromScale(0.7, 0.06), "", Color3.fromRGB(255, 255, 255), 3)
+
+local crewFrame = Instance.new("Frame")
+crewFrame.BackgroundColor3 = Color3.fromRGB(16, 16, 22)
+crewFrame.BackgroundTransparency = 0.25
+crewFrame.Position = UDim2.fromScale(0.78, 0.16)
+crewFrame.Size = UDim2.fromScale(0.2, 0.55)
+crewFrame.Parent = gui
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 12)
+corner.Parent = crewFrame
+local crewTitle = label(crewFrame, UDim2.fromScale(0.05, 0.02), UDim2.fromScale(0.9, 0.1), "CREW", Color3.fromRGB(255, 220, 70), 4)
+crewTitle.Parent = crewFrame
+local crewList = Instance.new("TextLabel")
+crewList.BackgroundTransparency = 1
+crewList.Position = UDim2.fromScale(0.06, 0.14)
+crewList.Size = UDim2.fromScale(0.88, 0.82)
+crewList.Font = Enum.Font.GothamBold
+crewList.TextXAlignment = Enum.TextXAlignment.Left
+crewList.TextYAlignment = Enum.TextYAlignment.Top
+crewList.TextWrapped = true
+crewList.TextScaled = false
+crewList.TextSize = 16
+crewList.TextColor3 = Color3.new(1, 1, 1)
+crewList.Text = "Nobody yet."
+stroke(crewList)
+crewList.Parent = crewFrame
+
+local toastLabel = label(gui, UDim2.fromScale(0.2, 0.42), UDim2.fromScale(0.6, 0.08), "", Color3.fromRGB(255, 244, 160), 5)
+toastLabel.Visible = false
+local toastToken = 0
+
+local function showToast(text)
+	toastToken += 1
+	local token = toastToken
+	toastLabel.Text = text
+	toastLabel.Visible = true
+	task.delay(2.4, function()
+		if toastToken == token then
+			toastLabel.Visible = false
+		end
+	end)
+end
+
+toast.OnClientEvent:Connect(showToast)
+
+local function refreshCrew()
+	local crew = player:FindFirstChild("Crew")
+	local lines = {}
+	if crew then
+		for _, def in ipairs(Characters.List) do
+			if crew:FindFirstChild(def.id) then
+				table.insert(lines, string.format("%s  %s  $%d/s", def.rarity, def.name, def.income))
+			end
+		end
+	end
+	crewList.Text = #lines > 0 and table.concat(lines, "\n") or "Nobody yet."
+end
+
+local function refreshHud()
+	local stats = player:FindFirstChild("leaderstats")
+	local cash = stats and stats:FindFirstChild("Cash")
+	local speed = stats and stats:FindFirstChild("Speed")
+	local income = player:FindFirstChild("Income")
+	local ownedCount = player:FindFirstChild("OwnedCount")
+	local checkpoint = player:FindFirstChild("Checkpoint")
+	if not (cash and speed and income and ownedCount and checkpoint) then
+		return
+	end
+	cashLabel.Text = string.format("$%d", cash.Value)
+	infoLabel.Text = string.format("Speed %d    +$%d/s    %d/10", speed.Value, income.Value, ownedCount.Value)
+	local gate = Characters.Gates[checkpoint.Value]
+	if gate then
+		if speed.Value > gate.need then
+			hintLabel.Text = string.format("Step on the yellow pad. %s is open.", gate.next)
+		else
+			hintLabel.Text = string.format("%s needs more than %d speed. You have %d.", gate.next, gate.need, speed.Value)
+		end
+	else
+		hintLabel.Text = "Gold Isle. Collect the last characters."
+	end
+	refreshCrew()
+end
+
+local function watch(instance)
+	if not instance then
+		return
+	end
+	instance.Changed:Connect(refreshHud)
+	if instance:IsA("Folder") then
+		instance.ChildAdded:Connect(refreshHud)
+	end
+end
+
+task.spawn(function()
+	local stats = player:WaitForChild("leaderstats")
+	watch(stats:WaitForChild("Cash"))
+	watch(stats:WaitForChild("Speed"))
+	watch(player:WaitForChild("Income"))
+	watch(player:WaitForChild("OwnedCount"))
+	watch(player:WaitForChild("Checkpoint"))
+	watch(player:WaitForChild("Crew"))
+	refreshHud()
+end)
+]]></ProtectedString>
+        <bool name="Disabled">false</bool>
+      </Properties>
+    </Item>
+    </Item>
+  </Item>
+  <Item class="Workspace" referent="10">
+    <Properties>
+      <string name="Name">Workspace</string>
+      <float name="Gravity">196.2</float>
+    </Properties>
+    <Item class="Camera" referent="11">
+      <Properties>
+        <string name="Name">Camera</string>
+      </Properties>
+    </Item>
+  </Item>
+</roblox>
