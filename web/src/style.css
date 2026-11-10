@@ -1,0 +1,39 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: #08315f; font-family: Nunito, "Trebuchet MS", sans-serif; color: white; }
+#view { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; }
+.card {
+  background: rgba(10, 12, 22, 0.78);
+  border: 3px solid #ffd24a;
+  border-radius: 18px;
+  box-shadow: 0 10px 0 rgba(0, 0, 0, 0.25);
+}
+#hud { position: fixed; inset: 0; pointer-events: none; }
+.cash-card { position: absolute; top: max(12px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); width: min(440px, calc(100% - 24px)); padding: 10px 16px 12px; text-align: center; }
+#cash { margin: 0; font-size: 34px; font-weight: 900; color: #ffe14a; text-shadow: 0 3px 0 #000; }
+#info { margin: 0; font-weight: 800; color: #c8f4ff; }
+.bar { height: 12px; margin-top: 8px; border-radius: 99px; background: #242838; overflow: hidden; }
+#bar-fill { height: 100%; width: 0; background: #ffc42e; border-radius: 99px; }
+.crew-card { position: absolute; top: 118px; right: 12px; width: min(230px, 34vw); max-height: 48vh; padding: 10px 12px; overflow: auto; }
+.crew-title { margin: 0 0 6px; font-weight: 900; color: #ffe14a; }
+#crew { margin: 0; padding-left: 18px; }
+#crew li { margin: 4px 0; font-size: 13px; font-weight: 800; }
+.hint-card { position: absolute; left: 50%; bottom: max(108px, calc(env(safe-area-inset-bottom) + 96px)); transform: translateX(-50%); width: min(640px, calc(100% - 24px)); padding: 10px 14px; text-align: center; }
+#hint, #next { margin: 0; font-weight: 800; }
+#next { color: #b6ffc4; margin-top: 4px; }
+.controls { position: fixed; left: 0; right: 0; bottom: max(14px, env(safe-area-inset-bottom)); display: flex; justify-content: space-between; align-items: end; padding: 0 16px; pointer-events: none; }
+#joy { width: 112px; height: 112px; border-radius: 50%; background: rgba(255,255,255,0.16); border: 3px solid rgba(255,255,255,0.7); position: relative; pointer-events: auto; touch-action: none; }
+#knob { width: 52px; height: 52px; border-radius: 50%; background: white; position: absolute; left: 30px; top: 30px; }
+#collect { pointer-events: auto; border: 0; border-radius: 999px; background: #37d66a; color: #06210f; font: 900 20px Nunito, sans-serif; padding: 16px 22px; box-shadow: 0 6px 0 #128a3d; }
+#collect:disabled { background: #6d7b86; color: #e8eef2; box-shadow: 0 6px 0 #3d4a54; }
+#title { position: fixed; inset: 0; display: grid; place-items: center; align-content: center; gap: 10px; padding: 24px; text-align: center; background: linear-gradient(180deg, rgba(8,40,90,0.55), rgba(8,24,48,0.72)); z-index: 5; }
+#title[hidden] { display: none; }
+#title h1 { margin: 0; font-size: clamp(40px, 8vw, 76px); text-shadow: 0 6px 0 #062048; }
+.kicker { margin: 0; letter-spacing: 0.18em; text-transform: uppercase; color: #ffe14a; font-weight: 900; }
+.lead, .fine { margin: 0; max-width: 560px; font-weight: 800; }
+#play { border: 0; border-radius: 16px; background: #ffe14a; color: #1a1404; font: 900 22px Nunito, sans-serif; padding: 14px 36px; box-shadow: 0 6px 0 #b88912; cursor: pointer; }
+#float { position: fixed; inset: 0; pointer-events: none; }
+.popup { position: absolute; left: 50%; top: 28%; font: 900 28px Nunito, sans-serif; color: #ffe14a; text-shadow: 0 3px 0 #000; }
+@media (max-width: 720px) {
+  .crew-card { display: none; }
+  #cash { font-size: 28px; }
+}

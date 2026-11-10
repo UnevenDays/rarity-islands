@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#0c3f86" />
+    <title>Rarity Islands</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <canvas id="view"></canvas>
+    <div id="hud">
+      <section class="card cash-card" aria-live="polite">
+        <p id="cash">$50</p>
+        <p id="info">Speed 16</p>
+        <div class="bar"><div id="bar-fill"></div></div>
+      </section>
+      <aside class="card crew-card">
+        <p class="crew-title">Crew</p>
+        <ol id="crew"></ol>
+      </aside>
+      <section class="card hint-card">
+        <p id="hint">Collect characters. Speed opens the next island.</p>
+        <p id="next">Next: Tin Teller.</p>
+      </section>
+    </div>
+    <div id="float"></div>
+    <div class="controls">
+      <div id="joy" aria-label="Move">
+        <div id="knob"></div>
+      </div>
+      <button id="collect" type="button">Collect</button>
+    </div>
+    <section id="title">
+      <p class="kicker">Collector</p>
+      <h1>Rarity Islands</h1>
+      <p class="lead">Buy rarer characters. They pay more cash and make you faster. Cross the water only when your speed is high enough.</p>
+      <button id="play" type="button">Play</button>
+      <p class="fine">WASD or the stick to move. Walk up to a glowing character and collect.</p>
+    </section>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

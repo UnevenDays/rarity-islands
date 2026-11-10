@@ -25,6 +25,10 @@ You start at 16 speed with $50. Green Dock's three characters reach 36 speed, an
 
 Bibi Netanjahuuu is bald, in a blue and white robe with a Star of David, a bat, a stack of cash, dark glasses, and three gold teeth. Josepee Stalin has a red winter hat with a gold emblem, a hammer, a sickle, and heavy leather boots. Kim Jong Uno is the large figure in a red and blue robe with a star, a missile, a small dark green tank, and two smaller people kneeling at his feet. Osama bin Baden has a turban, a toy airplane, and bombs around his waist. Jin Pig is the round yellow figure with a factory in one hand and a red flag in the other.
 
+## Play in the browser
+
+The same loop is published at [https://unevendays.github.io/rarity-islands/](https://unevendays.github.io/rarity-islands/). The source for that page is in `web/`.
+
 ## Open the place
 
 `RarityIslands.rbxlx` is the file Roblox Studio opens. Rebuild it after a script change:
